@@ -51,6 +51,9 @@ printf 'UUID=a /data ext4 defaults 0 2\nUUID=b /data ext4 defaults 0 2\n' > "$T/
 assert "duplicate mountpoint HIGH" "already defined on line 1" -- $FL "$T/dup" --no-color
 printf 'UUID=a /data ext4\n' > "$T/short"
 assert "too few fields is error"  "need at least 4"  -- $FL "$T/short" --no-color
+printf 'UUID=a /data ext4 defaults never 9\n' > "$T/badnumeric"
+assert "invalid dump value rejected" "dump field must be 0 or 1" -- $FL "$T/badnumeric" --no-color
+assert "invalid fsck pass rejected" "fsck pass must be 0, 1, or 2" -- $FL "$T/badnumeric" --no-color
 
 echo "== a clean fstab =="
 printf 'UUID=root / ext4 defaults 0 1\nUUID=t /tmp ext4 nodev,nosuid,noexec 0 2\n' > "$T/clean"

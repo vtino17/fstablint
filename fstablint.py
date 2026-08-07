@@ -59,6 +59,9 @@ def audit(text: str) -> list[Finding]:
             continue
         if len(fields) < 6 and fstype not in ("swap",) and spec.lower() != "none":
             out.append(Finding("LOW", i, f"missing dump/pass fields ({len(fields)}/6); fsck order is undefined"))
+        if len(fields) > 6:
+            out.append(Finding("ERROR", i, f"too many fields ({len(fields)}/6); inline comments must start with '#'"))
+            continue
 
         # duplicate mount point (ignore swap/none)
         if mount not in ("none", "swap", "?"):
@@ -88,7 +91,11 @@ def audit(text: str) -> list[Finding]:
 
         # passno on a real filesystem
         if len(fields) >= 6 and fstype not in PSEUDO_FS and fstype not in NETWORK_FS:
-            passno = fields[5]
+            dump, passno = fields[4], fields[5]
+            if dump not in ("0", "1"):
+                out.append(Finding("ERROR", i, f"dump field must be 0 or 1, got {dump!r}"))
+            if passno not in ("0", "1", "2"):
+                out.append(Finding("ERROR", i, f"fsck pass must be 0, 1, or 2, got {passno!r}"))
             if passno == "0":
                 out.append(Finding("LOW", i, f"{mount}: fsck pass is 0; this filesystem will never be checked"))
             if mount == "/" and passno != "1":
