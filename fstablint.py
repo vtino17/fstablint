@@ -67,6 +67,8 @@ def audit(text: str) -> list[Finding]:
         if mount not in ("none", "swap", "?"):
             if mount in seen_mounts:
                 out.append(Finding("HIGH", i, f"mount point {mount} already defined on line {seen_mounts[mount]}"))
+            elif mount == "/":
+                seen_mounts[mount] = i
             else:
                 seen_mounts[mount] = i
 
